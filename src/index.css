@@ -310,30 +310,20 @@ button {
 
 .plate-check::before {
   content: '';
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: transparent;
-  transition: all 0.15s ease;
+  display: none;
 }
 
 .plate-check.checked {
   border-color: var(--success);
-  background: var(--success-dim);
-}
-
-.plate-check.checked::before {
-  width: 30px;
-  height: 30px;
   background: var(--success);
 }
 
 .plate-check.checked::after {
   content: '✓';
-  position: absolute;
   color: var(--bg);
   font-size: 16px;
   font-weight: 700;
+  line-height: 1;
 }
 
 /* ---------- Settings screen ---------- */
