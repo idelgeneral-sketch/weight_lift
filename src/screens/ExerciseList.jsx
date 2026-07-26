@@ -102,7 +102,7 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div className="screen-flex">
       <div className="workout-header">
         <div style={{ position: 'relative' }}>
           <button className="icon-btn" onClick={() => setMenuOpen((v) => !v)} aria-label="תפריט">☰</button>
@@ -128,7 +128,7 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
       ) : (
         <div className="exercise-list">
           {exercises.map((ex) => (
-            <div key={ex.id} className="exercise-row">
+            <div key={ex.id} className="exercise-row list-view">
               <div className="exercise-info">
                 <div className="slot-num">#{ex.slot_order}</div>
                 <div className="ex-name">{ex.name}</div>
@@ -147,8 +147,6 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
                 />
                 <span className="weight-unit">ק"ג</span>
               </div>
-
-              <div />
             </div>
           ))}
         </div>

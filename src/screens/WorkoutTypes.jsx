@@ -18,7 +18,7 @@ export default function WorkoutTypes({ onBack, onSelect }) {
   }, [])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div className="screen-flex">
       <div className="workout-header">
         <div className="spacer-40" />
         <div className="workout-title-block">

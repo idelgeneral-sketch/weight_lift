@@ -34,7 +34,7 @@ export default function Session({ sessionId, date, workoutType, onFinish }) {
   const pct = Math.round((doneCount / total) * 100)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div className="screen-flex">
       <div className="workout-header">
         <div className="spacer-40" />
         <div className="workout-title-block">

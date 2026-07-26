@@ -38,10 +38,19 @@ body {
 .app-shell {
   max-width: 480px;
   margin: 0 auto;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
+}
+
+.screen-flex {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .display {
@@ -293,6 +302,21 @@ button {
   color: var(--text-muted);
   opacity: 0.75;
   -webkit-text-fill-color: var(--text-muted);
+}
+
+.exercise-row.list-view {
+  grid-template-columns: 1fr 62px;
+  padding: 9px 12px;
+  gap: 8px;
+}
+
+.exercise-row.list-view .ex-name {
+  font-size: 14px;
+}
+
+.exercise-row.list-view .ex-muscle {
+  font-size: 11px;
+  margin-top: 1px;
 }
 
 .plate-check {
