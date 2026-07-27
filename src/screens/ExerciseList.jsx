@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
+import { getCached, setCached } from '../dataCache.js'
 
 function todayStr() {
   const d = new Date()
@@ -9,10 +10,18 @@ function todayStr() {
   return `${y}-${m}-${day}`
 }
 
+function weightsFromExercises(list) {
+  const w = {}
+  list.forEach((ex) => { w[ex.id] = ex.weight != null ? String(ex.weight) : '' })
+  return w
+}
+
 export default function ExerciseList({ workoutType, onBack, onStart }) {
-  const [loading, setLoading] = useState(true)
-  const [exercises, setExercises] = useState([])
-  const [weights, setWeights] = useState({}) // id -> string
+  const cacheKey = `exercises:${workoutType.id}`
+  const cached = getCached(cacheKey)
+  const [loading, setLoading] = useState(!cached)
+  const [exercises, setExercises] = useState(cached || [])
+  const [weights, setWeights] = useState(cached ? weightsFromExercises(cached) : {})
   const [editMode, setEditMode] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -20,7 +29,6 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
 
   useEffect(() => {
     async function load() {
-      setLoading(true)
       const { data, error } = await supabase
         .from('exercises')
         .select('*')
@@ -29,9 +37,9 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
         .order('slot_order', { ascending: true })
       if (!error) {
         setExercises(data || [])
-        const w = {}
-        ;(data || []).forEach((ex) => { w[ex.id] = ex.weight != null ? String(ex.weight) : '' })
-        setWeights(w)
+        setCached(cacheKey, data || [])
+        // לא דורסים משקלים שהמשתמש כרגע עורך במסך
+        if (!editMode) setWeights(weightsFromExercises(data || []))
       }
       setLoading(false)
     }
@@ -130,7 +138,6 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
           {exercises.map((ex) => (
             <div key={ex.id} className="exercise-row list-view">
               <div className="exercise-info">
-                <div className="slot-num">#{ex.slot_order}</div>
                 <div className="ex-name">{ex.name}</div>
                 {ex.muscle_group && <div className="ex-muscle">{ex.muscle_group}</div>}
               </div>

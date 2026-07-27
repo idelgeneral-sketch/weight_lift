@@ -55,7 +55,6 @@ export default function Session({ sessionId, date, workoutType, onFinish }) {
           {items.map((item) => (
             <div key={item.id} className={`exercise-row${item.completed ? ' done' : ''}`}>
               <div className="exercise-info">
-                <div className="slot-num">#{item.exercises?.slot_order}</div>
                 <div className="ex-name">{item.exercises?.name}</div>
                 {item.exercises?.muscle_group && (
                   <div className="ex-muscle">{item.exercises.muscle_group}</div>

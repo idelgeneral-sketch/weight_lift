@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
+import { getCached, setCached } from '../dataCache.js'
+
+const CACHE_KEY = 'workout_types'
 
 export default function WorkoutTypes({ onBack, onSelect }) {
-  const [loading, setLoading] = useState(true)
-  const [types, setTypes] = useState([])
+  const cached = getCached(CACHE_KEY)
+  const [loading, setLoading] = useState(!cached)
+  const [types, setTypes] = useState(cached || [])
 
   useEffect(() => {
     async function load() {
@@ -11,7 +15,10 @@ export default function WorkoutTypes({ onBack, onSelect }) {
         .from('workout_types')
         .select('*')
         .order('sort_order', { ascending: true })
-      if (!error) setTypes(data || [])
+      if (!error) {
+        setTypes(data || [])
+        setCached(CACHE_KEY, data || [])
+      }
       setLoading(false)
     }
     load()
