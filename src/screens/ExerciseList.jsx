@@ -16,13 +16,29 @@ function weightsFromExercises(list) {
   return w
 }
 
+function namesFromExercises(list) {
+  const n = {}
+  list.forEach((ex) => { n[ex.id] = ex.name || '' })
+  return n
+}
+
+function musclesFromExercises(list) {
+  const m = {}
+  list.forEach((ex) => { m[ex.id] = ex.muscle_group || '' })
+  return m
+}
+
 export default function ExerciseList({ workoutType, onBack, onStart }) {
   const cacheKey = `exercises:${workoutType.id}`
   const cached = getCached(cacheKey)
   const [loading, setLoading] = useState(!cached)
   const [exercises, setExercises] = useState(cached || [])
   const [weights, setWeights] = useState(cached ? weightsFromExercises(cached) : {})
-  const [editMode, setEditMode] = useState(false)
+  const [names, setNames] = useState({})
+  const [muscles, setMuscles] = useState({})
+  const [editMode, setEditMode] = useState(false) // עריכת משקלים בלבד
+  const [fullEditMode, setFullEditMode] = useState(false) // עריכת תרגילים מלאה
+  const [deletedIds, setDeletedIds] = useState([])
   const [menuOpen, setMenuOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [starting, setStarting] = useState(false)
@@ -38,8 +54,8 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
       if (!error) {
         setExercises(data || [])
         setCached(cacheKey, data || [])
-        // לא דורסים משקלים שהמשתמש כרגע עורך במסך
-        if (!editMode) setWeights(weightsFromExercises(data || []))
+        // לא דורסים ערכים שהמשתמש כרגע עורך במסך
+        if (!editMode && !fullEditMode) setWeights(weightsFromExercises(data || []))
       }
       setLoading(false)
     }
@@ -48,6 +64,14 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
 
   function updateWeight(id, value) {
     setWeights((w) => ({ ...w, [id]: value }))
+  }
+
+  function updateName(id, value) {
+    setNames((n) => ({ ...n, [id]: value }))
+  }
+
+  function updateMuscle(id, value) {
+    setMuscles((m) => ({ ...m, [id]: value }))
   }
 
   async function saveWeights() {
@@ -62,6 +86,78 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
           .eq('id', ex.id)
       }
       setEditMode(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function openFullEdit() {
+    setNames(namesFromExercises(exercises))
+    setMuscles(musclesFromExercises(exercises))
+    setEditMode(false)
+    setFullEditMode(true)
+    setMenuOpen(false)
+  }
+
+  function addNewRow() {
+    const nextSlot = exercises.length ? Math.max(...exercises.map((e) => e.slot_order)) + 1 : 1
+    const tempId = `new-${Date.now()}`
+    setExercises((prev) => [...prev, { id: tempId, slot_order: nextSlot, _isNew: true }])
+    setNames((n) => ({ ...n, [tempId]: '' }))
+    setMuscles((m) => ({ ...m, [tempId]: '' }))
+    setWeights((w) => ({ ...w, [tempId]: '' }))
+  }
+
+  function removeRow(ex) {
+    if (!ex._isNew) {
+      if (!window.confirm(`למחוק את "${names[ex.id] || ex.name}"?`)) return
+      setDeletedIds((prev) => [...prev, ex.id])
+    }
+    setExercises((prev) => prev.filter((e) => e.id !== ex.id))
+    setNames((n) => { const c = { ...n }; delete c[ex.id]; return c })
+    setMuscles((m) => { const c = { ...m }; delete c[ex.id]; return c })
+    setWeights((w) => { const c = { ...w }; delete c[ex.id]; return c })
+  }
+
+  async function saveFullEdit() {
+    setSaving(true)
+    try {
+      for (const ex of exercises) {
+        const raw = weights[ex.id]
+        const num = raw === '' ? null : Number(raw)
+        const payload = {
+          workout_type_id: workoutType.id,
+          slot_order: ex.slot_order,
+          name: names[ex.id] || '',
+          muscle_group: muscles[ex.id] || null,
+          weight: Number.isFinite(num) ? num : null,
+          active: true,
+        }
+        if (ex._isNew) {
+          await supabase.from('exercises').insert(payload)
+        } else {
+          await supabase.from('exercises').update(payload).eq('id', ex.id)
+        }
+      }
+
+      for (const id of deletedIds) {
+        await supabase.from('exercises').update({ active: false }).eq('id', id)
+      }
+
+      const { data } = await supabase
+        .from('exercises')
+        .select('*')
+        .eq('workout_type_id', workoutType.id)
+        .eq('active', true)
+        .order('slot_order', { ascending: true })
+
+      setExercises(data || [])
+      setWeights(weightsFromExercises(data || []))
+      setNames(namesFromExercises(data || []))
+      setMuscles(musclesFromExercises(data || []))
+      setCached(cacheKey, data || [])
+      setDeletedIds([])
+      setFullEditMode(false)
     } finally {
       setSaving(false)
     }
@@ -118,9 +214,12 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
             <div className="dropdown-menu">
               <button
                 className="dropdown-item"
-                onClick={() => { setEditMode(true); setMenuOpen(false) }}
+                onClick={() => { setEditMode(true); setFullEditMode(false); setMenuOpen(false) }}
               >
                 שינוי משקלים
+              </button>
+              <button className="dropdown-item" onClick={openFullEdit}>
+                עריכת תרגילים
               </button>
             </div>
           )}
@@ -136,10 +235,29 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
       ) : (
         <div className="exercise-list">
           {exercises.map((ex) => (
-            <div key={ex.id} className="exercise-row list-view">
+            <div key={ex.id} className={`exercise-row list-view${fullEditMode ? ' editing' : ''}`}>
               <div className="exercise-info">
-                <div className="ex-name">{ex.name}</div>
-                {ex.muscle_group && <div className="ex-muscle">{ex.muscle_group}</div>}
+                {fullEditMode ? (
+                  <input
+                    className="inline-edit-input name"
+                    value={names[ex.id] ?? ''}
+                    placeholder="שם התרגיל"
+                    onChange={(e) => updateName(ex.id, e.target.value)}
+                  />
+                ) : (
+                  <div className="ex-name">{ex.name}</div>
+                )}
+
+                {fullEditMode ? (
+                  <input
+                    className="inline-edit-input muscle"
+                    value={muscles[ex.id] ?? ''}
+                    placeholder="קבוצת שריר"
+                    onChange={(e) => updateMuscle(ex.id, e.target.value)}
+                  />
+                ) : (
+                  ex.muscle_group && <div className="ex-muscle">{ex.muscle_group}</div>
+                )}
               </div>
 
               <div className="weight-input-wrap">
@@ -147,29 +265,50 @@ export default function ExerciseList({ workoutType, onBack, onStart }) {
                   className="weight-input mono"
                   type="number"
                   inputMode="decimal"
-                  disabled={!editMode}
+                  disabled={!editMode && !fullEditMode}
                   value={weights[ex.id] ?? ''}
                   placeholder="—"
                   onChange={(e) => updateWeight(ex.id, e.target.value)}
                 />
                 <span className="weight-unit">ק"ג</span>
               </div>
+
+              {fullEditMode && (
+                <button
+                  className="row-delete-btn"
+                  onClick={() => removeRow(ex)}
+                  aria-label="מחיקת תרגיל"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      <div className="save-bar">
-        {editMode ? (
-          <button className="primary-btn" onClick={saveWeights} disabled={saving}>
-            {saving ? 'שומר...' : 'שמור'}
+      {!fullEditMode && (
+        <div className="save-bar">
+          {editMode ? (
+            <button className="primary-btn" onClick={saveWeights} disabled={saving}>
+              {saving ? 'שומר...' : 'שמור'}
+            </button>
+          ) : (
+            <button className="primary-btn" onClick={handleStart} disabled={starting || loading}>
+              {starting ? 'פותח...' : 'התחל'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {fullEditMode && (
+        <>
+          <button className="fab-confirm" onClick={saveFullEdit} disabled={saving}>
+            {saving ? 'שומר...' : '✓ אישור'}
           </button>
-        ) : (
-          <button className="primary-btn" onClick={handleStart} disabled={starting || loading}>
-            {starting ? 'פותח...' : 'התחל'}
-          </button>
-        )}
-      </div>
+          <button className="fab-add" onClick={addNewRow} aria-label="הוספת תרגיל">+</button>
+        </>
+      )}
     </div>
   )
 }

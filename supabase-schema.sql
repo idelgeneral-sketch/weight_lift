@@ -3,6 +3,12 @@
 
 create extension if not exists "pgcrypto";
 
+-- מאפשר להריץ את הסקריפט הזה מחדש בבטחה אם משהו נכשל באמצע
+drop table if exists session_items cascade;
+drop table if exists workout_sessions cascade;
+drop table if exists exercises cascade;
+drop table if exists workout_types cascade;
+
 -- סוגי האימונים (אימון אחד / שתיים / שלוש)
 create table if not exists workout_types (
   id uuid primary key default gen_random_uuid(),
@@ -53,20 +59,14 @@ create policy "public all session_items" on session_items for all using (true) w
 
 -- שלושת סוגי האימונים
 insert into workout_types (name, sort_order) values
-('אימון אחד', 1),
-('אימון שתיים', 2),
-('אימון שלוש', 3);
+('אימון אחד', 1);
 
 -- 14 התרגילים לכל אחד משלושת האימונים (תרגיל #1 משתנה בין הסוגים)
 insert into exercises (workout_type_id, slot_order, name, muscle_group, weight)
-select id, 1, 'סקוואט גובלט (דמבל)', 'רגל קדמית / עכוז', null from workout_types where sort_order = 1
-union all
-select id, 1, 'לאנג׳ים הליכתיים (דמבלים)', 'רגל קדמית / עכוז', null from workout_types where sort_order = 2
-union all
-select id, 1, 'סקוואט בולגרי (דמבלים)', 'רגל קדמית / עכוז', null from workout_types where sort_order = 3;
+select id, 1, 'סקוואט גובלט (דמבל)', 'רגל קדמית / עכוז', null::numeric from workout_types where sort_order = 1;
 
 insert into exercises (workout_type_id, slot_order, name, muscle_group, weight)
-select id, s.slot, s.name, s.muscle, null
+select id, s.slot, s.name, s.muscle, null::numeric
 from workout_types, (values
   (2,  'לחיצת חזה במכונה', 'חזה'),
   (3,  'פולי עליון', 'גב עליון'),

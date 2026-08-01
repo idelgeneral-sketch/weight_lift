@@ -258,6 +258,118 @@ button {
   color: var(--text-muted);
 }
 
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 6px;
+}
+
+.cal-nav-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cal-month-label {
+  font-family: 'Secular One', sans-serif;
+  font-size: 17px;
+  color: var(--text);
+}
+
+.cal-weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 4px 12px;
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 4px 12px 20px;
+  overflow-y: auto;
+}
+
+.cal-cell {
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  position: relative;
+  color: var(--text);
+}
+
+.cal-cell.empty {
+  border: none;
+  background: transparent;
+}
+
+.cal-cell:disabled {
+  cursor: default;
+}
+
+.cal-cell.today {
+  border-color: var(--accent);
+  border-width: 1.5px;
+}
+
+.cal-cell.done {
+  background: var(--success-dim);
+  border-color: var(--success);
+}
+
+.cal-day-num {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+}
+
+.cal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.day-session-title {
+  font-family: 'Secular One', sans-serif;
+  font-size: 14px;
+  color: var(--accent);
+  padding: 10px 4px 4px;
+}
+
+.status-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  margin: 0 auto;
+}
+
+.status-dot.done {
+  border-color: var(--success);
+  background: var(--success);
+}
+
 .dropdown-menu {
   position: absolute;
   top: 46px;
@@ -315,6 +427,84 @@ button {
 .exercise-row.list-view .ex-muscle {
   font-size: 11px;
   margin-top: 1px;
+}
+
+.exercise-row.list-view.editing {
+  grid-template-columns: 1fr 62px 26px;
+}
+
+.row-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--danger);
+  font-size: 16px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inline-edit-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--border);
+  color: var(--text);
+  font-family: inherit;
+  padding: 3px 0;
+}
+
+.inline-edit-input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.inline-edit-input.name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.inline-edit-input.muscle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.fab-confirm {
+  position: absolute;
+  left: 18px;
+  bottom: 22px;
+  background: var(--success);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  z-index: 30;
+}
+
+.fab-confirm:disabled { opacity: 0.6; }
+
+.fab-add {
+  position: absolute;
+  right: 18px;
+  bottom: 22px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #1a1200;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  z-index: 30;
 }
 
 .plate-check {

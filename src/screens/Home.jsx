@@ -1,4 +1,4 @@
-export default function Home({ onEnter }) {
+export default function Home({ onEnter, onOpenCalendar }) {
   return (
     <div className="home-screen">
       <h1 className="home-title display">ברזל</h1>
@@ -8,6 +8,10 @@ export default function Home({ onEnter }) {
         <button className="variant-btn" onClick={onEnter}>
           אימונים
           <span className="variant-letter">›</span>
+        </button>
+        <button className="variant-btn" onClick={onOpenCalendar}>
+          לוח אימונים
+          <span className="variant-letter">📅</span>
         </button>
       </div>
     </div>
