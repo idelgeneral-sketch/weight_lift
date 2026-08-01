@@ -84,7 +84,7 @@ export default function DayDetail({ date, onBack }) {
       )}
 
       <div className="save-bar">
-        <button className="primary-btn" onClick={onBack}>חזרה למסך הראשי</button>
+        <button className="primary-btn" onClick={onBack}>חזרה ללוח</button>
       </div>
     </div>
   )

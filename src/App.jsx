@@ -56,7 +56,7 @@ export default function App() {
       {screen === 'day' && selectedDate && (
         <DayDetail
           date={selectedDate}
-          onBack={() => setScreen('home')}
+          onBack={() => setScreen('calendar')}
         />
       )}
 
